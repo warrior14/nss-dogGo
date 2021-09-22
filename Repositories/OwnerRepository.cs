@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using DogGo.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+
 namespace DogGo.Repositories
 {
     public class OwnerRepository : IOwnerRepository
@@ -25,45 +26,135 @@ namespace DogGo.Repositories
             }
         }
 
+        // GET/List: All Owners in db:
+        public List<Owner> GetAllOwners()
+        {
+            using (SqlConnection conn = Connection)
+            {
+                conn.Open();
+                using (SqlCommand cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"SELECT o.Id, o.Email, o.Name, o.Address, o.NeighborhoodId, o.Phone, n.Id [nId], n.Name [Neighborhood Name]
+                                      FROM Owner o
+                                      INNER JOIN Neighborhood n
+                                      ON o.NeighborhoodId = n.Id";
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        List<Owner> owners = new List<Owner>();
+                        while (reader.Read())
+                        {
+                            Owner owner = new Owner
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                Email = reader.GetString(reader.GetOrdinal("Email")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
+                                Address = reader.GetString(reader.GetOrdinal("Address")),
+                                NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId")),
+                                Phone = reader.GetString(reader.GetOrdinal("Phone"))
+                            };
+
+                            // If there is a NeighborhoodId in the database:
+                            if (!reader.IsDBNull(reader.GetOrdinal("NeighborhoodId")))
+                            {
+                                owner.Neighborhood = new Neighborhood
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("nId")),
+                                    Name = reader.GetString(reader.GetOrdinal("Neighborhood Name"))
+                                };
+                            }
+
+                            owners.Add(owner);
+                        }
+
+                        return owners;
+                    }
+                }
+            }
+        }
+
+        // GET: Owner by Id
         public Owner GetOwnerById(int id)
         {
             using (SqlConnection conn = Connection)
             {
                 conn.Open();
-
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = @"
-                        SELECT Id, [Name], Email, Address, Phone, NeighborhoodId
-                        FROM Owner
-                        WHERE Id = @id";
+                    cmd.CommandText = @"SELECT o.Id, 
+                                               o.Email, 
+                                               o.Name, 
+                                               o.Address, 
+                                               o.NeighborhoodId, 
+                                               o.Phone, 
+                                               n.Id [nId], 
+                                               n.Name [Neighborhood Name],
+                                               d.Id [DogId],
+                                               d.Name [Dog Name],
+                                               d.Breed,
+                                               d.Notes,
+                                               d.ImageUrl [DogImageUrl]
+                                      FROM Owner o
+                                      LEFT JOIN Dog d
+                                      ON o.Id = d.OwnerId
+                                      INNER JOIN Neighborhood n 
+                                      ON o.NeighborhoodId = n.Id
+                                      WHERE o.Id = @id";
 
                     cmd.Parameters.AddWithValue("@id", id);
 
-                    SqlDataReader reader = cmd.ExecuteReader();
+                    Owner owner = null;
 
-                    if (reader.Read())
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        Owner owner = new Owner()
+                        while (reader.Read())
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            Email = reader.GetString(reader.GetOrdinal("Email")),
-                            Address = reader.GetString(reader.GetOrdinal("Address")),
-                            Phone = reader.GetString(reader.GetOrdinal("Phone")),
-                            NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"))
-                        };
+                            if (owner == null)
+                            {
+                                owner = new Owner
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                                    Email = reader.GetString(reader.GetOrdinal("Email")),
+                                    Name = reader.GetString(reader.GetOrdinal("Name")),
+                                    Address = reader.GetString(reader.GetOrdinal("Address")),
+                                    NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId")),
+                                    Phone = reader.GetString(reader.GetOrdinal("Phone")),
+                                    Dogs = new List<Dog>()
+                                };
+                            }
+                            // If there is a DogId in the database:
+                            if (!reader.IsDBNull(reader.GetOrdinal("DogId")))
+                            {
+                                owner.Dogs.Add(new Dog
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("DogId")),
+                                    Name = reader.GetString(reader.GetOrdinal("Dog Name")),
+                                    Breed = reader.GetString(reader.GetOrdinal("Breed")),
+                                    //Notes = reader.GetString(reader.GetOrdinal("Notes")),
+                                    //ImageUrl = reader.GetString(reader.GetOrdinal("DogImageUrl"))
+                                });
+                            }
+                            // If there is a NeighborhoodId in the database:
+                            if (!reader.IsDBNull(reader.GetOrdinal("NeighborhoodId")))
+                            {
+                                owner.Neighborhood = new Neighborhood
+                                {
+                                    Id = reader.GetInt32(reader.GetOrdinal("nId")),
+                                    Name = reader.GetString(reader.GetOrdinal("Neighborhood Name"))
+                                };
+                            }
+                            else
+                            {
+                                return null;
+                            }
+                        }
 
-                        reader.Close();
                         return owner;
                     }
-
-                    reader.Close();
-                    return null;
                 }
             }
         }
 
+        // GET: Owner by Email:
         public Owner GetOwnerByEmail(string email)
         {
             using (SqlConnection conn = Connection)
@@ -103,6 +194,7 @@ namespace DogGo.Repositories
             }
         }
 
+        // CREATE/ADD Owner:
         public void AddOwner(Owner owner)
         {
             using (SqlConnection conn = Connection)
@@ -129,6 +221,7 @@ namespace DogGo.Repositories
             }
         }
 
+        // UPDATE: Owner
         public void UpdateOwner(Owner owner)
         {
             using (SqlConnection conn = Connection)
@@ -159,6 +252,7 @@ namespace DogGo.Repositories
             }
         }
 
+        // DELETE: Owner
         public void DeleteOwner(int ownerId)
         {
             using (SqlConnection conn = Connection)
