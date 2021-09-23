@@ -195,8 +195,6 @@ namespace DogGo.Repositories
                 }
             }
         }
-
-        // GET: List of dogs of an owner by ownerId:
         public List<Dog> GetDogsByOwnerId(int ownerId)
         {
             using (SqlConnection conn = Connection)
@@ -244,5 +242,10 @@ namespace DogGo.Repositories
                 }
             }
         }
+
+
+
+
+
     }
 }
