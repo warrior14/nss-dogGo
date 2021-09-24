@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using DogGo.Repositories;
 
-
 namespace DogGo
 {
     public class Startup
@@ -30,8 +29,7 @@ namespace DogGo
             services.AddTransient<IOwnerRepository, OwnerRepository>();
             services.AddTransient<IDogRepository, DogRepository>();
             services.AddTransient<INeighborhoodRepository, NeighborhoodRepository>();
-
-
+            services.AddTransient<IWalksRepository, WalksRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,6 +58,7 @@ namespace DogGo
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+
             app.UseStatusCodePages();
         }
     }
