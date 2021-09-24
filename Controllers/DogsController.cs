@@ -12,47 +12,40 @@ namespace DogGo.Controllers
     public class DogsController : Controller
     {
         private readonly IDogRepository _dogRepo;
+        //Dependence Injection
 
-        // ASP.NET will give an instance of Dog Repository, a.k.a. "Dependency Injection"
         public DogsController(IDogRepository dogRepository)
         {
             _dogRepo = dogRepository;
         }
 
-        // GET: DogsController
+        // GET: DogController
         public ActionResult Index()
         {
             List<Dog> dogs = _dogRepo.GetAllDogs();
-
             return View(dogs);
         }
 
-        // GET: DogsController/Details/5
-        // GET: Dogs/Details/Id
+        // GET: DogController/Details/5
         public ActionResult Details(int id)
         {
             Dog dog = _dogRepo.GetDogById(id);
-
             if (dog == null)
             {
                 return NotFound();
             }
-
             return View(dog);
         }
 
-        // GET: DogsController/Create
-        // GET: Dogs/Create
-        // Creates a blank HTML form to be filled out with input from user with Create View:
+        // GET: DogController/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: DogsController/Create
-        // POST: Dogs/Create
-        [HttpPost] // Flag attribute informing app the kind of request it should handle
-        [ValidateAntiForgeryToken] // Flag attribute informing app the kind of request it should handle
+        // POST: DogController/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Create(Dog dog)
         {
             try
@@ -62,27 +55,22 @@ namespace DogGo.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 return View(dog);
             }
         }
 
-        // GET: DogsController/Edit/5
-        // GET: Dogs/Edit/Id
+        // GET: DogController/Edit/5
         public ActionResult Edit(int id)
         {
             Dog dog = _dogRepo.GetDogById(id);
-
             if (dog == null)
             {
                 return NotFound();
             }
-
             return View(dog);
         }
 
-        // POST: DogsController/Edit/5
-        // POST: Dogs/Edit/Id
+        // POST: DogController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, Dog dog)
@@ -94,22 +82,18 @@ namespace DogGo.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 return View(dog);
             }
         }
 
-        // GET: DogsController/Delete/5
-        // GET: Dogs/Delete/Id
-        // Create a view that asks the user to confirm the deletion:
+        // GET: DogController/Delete/5
         public ActionResult Delete(int id)
         {
             Dog dog = _dogRepo.GetDogById(id);
             return View(dog);
         }
 
-        // POST: DogsController/Delete/5
-        // POST: Dogs/Delete/Id
+        // POST: DogController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, Dog dog)
@@ -121,7 +105,6 @@ namespace DogGo.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 return View(dog);
             }
         }
