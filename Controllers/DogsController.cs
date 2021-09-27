@@ -55,6 +55,7 @@ namespace DogGo.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return View(dog);
             }
         }
@@ -82,6 +83,7 @@ namespace DogGo.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return View(dog);
             }
         }
@@ -104,7 +106,9 @@ namespace DogGo.Controllers
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
+
             {
+                Console.WriteLine(ex.Message);
                 return View(dog);
             }
         }

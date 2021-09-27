@@ -31,8 +31,10 @@ namespace DogGo.Repositories
                 using (SqlCommand cmd = conn.CreateCommand())
                 {
                     cmd.CommandText = @"
-                        SELECT Id, [Name], ImageUrl, NeighborhoodId
-                        FROM Walker
+                        SELECT w.Id, w.[Name], w.ImageUrl, w.NeighborhoodId, n.Id [nId], n.Name [Neighborhood Name]
+                        FROM Walker w
+                        LEFT JOIN Neighborhood n
+                        WHERE w.NeighborhoodId = n.Id
                     ";
 
                     SqlDataReader reader = cmd.ExecuteReader();
@@ -45,8 +47,23 @@ namespace DogGo.Repositories
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             Name = reader.GetString(reader.GetOrdinal("Name")),
                             ImageUrl = reader.GetString(reader.GetOrdinal("ImageUrl")),
-                            NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId"))
+                            NeighborhoodId = reader.GetInt32(reader.GetOrdinal("NeighborhoodId")),
+                            //Neighborhood = new Neighborhood
+                            //{
+                            //    Id = reader.GetInt32(reader.GetOrdinal("nId")),
+                            //    Name = reader.GetString(reader.GetOrdinal("Neighborhood Name"))
+                            //}
                         };
+
+                        // If there is a NeighborhoodId in the database:
+                        if (!reader.IsDBNull(reader.GetOrdinal("NeighborhoodId")))
+                        {
+                            walker.Neighborhood = new Neighborhood
+                            {
+                                Id = reader.GetInt32(reader.GetOrdinal("nId")),
+                                Name = reader.GetString(reader.GetOrdinal("Neighborhood Name"))
+                            };
+                        }
 
                         walkers.Add(walker);
                     }
