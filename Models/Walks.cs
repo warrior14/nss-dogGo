@@ -9,7 +9,21 @@ namespace DogGo.Models
     {
         public int Id { get; set; }
         public DateTime Date { get; set; }
+        public string ParsedDateTime
+        {
+            get
+            {
+                return Date.ToShortDateString();
+            }
+        }
         public int Duration { get; set; }
+        public int DurationInMinutes
+        {
+            get
+            {
+                return Duration / 60;
+            }
+        }
         public int TotalWalkTime { get; set; }
         public int WalkerId { get; set; }
         public int DogId { get; set; }
